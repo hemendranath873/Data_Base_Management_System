@@ -2,12 +2,9 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "food_ordering";
+$database = "food_ordering";
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Check connection
+$conn = new mysqli($servername, $username, $password, $database);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }

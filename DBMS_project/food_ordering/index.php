@@ -1,35 +1,54 @@
 <?php
-include('config.php');
+session_start();
+include 'db.php';
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: auth.php");
+    exit();
+}
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['order'])) {
+    $user_id = $_SESSION['user_id'];
+    $food_id = $_POST['food_id'];
+    $quantity = $_POST['quantity'];
+
+    $query = "INSERT INTO order_queue (user_id, food_id, quantity, status) VALUES (?, ?, ?, 'pending')";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("iii", $user_id, $food_id, $quantity);
+    $stmt->execute();
+
+    echo "Order placed successfully!";
+}
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Food Ordering System</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 
 <body>
-    <div class="container">
-        <h1>Welcome to the Food Ordering System</h1>
-        <form action="order.php" method="POST">
-            <label for="food">Choose your food:</label>
-            <select name="food" id="food">
-                <option value="Burger">Burger</option>
-                <option value="Pizza">Pizza</option>
-                <option value="Pasta">Pasta</option>
-                <option value="Salad">Salad</option>
-            </select>
+    <h2>Welcome to Food Ordering System</h2>
+    <a href="logout.php">Logout</a>
 
-            <label for="quantity">Quantity:</label>
-            <input type="number" name="quantity" id="quantity" required>
-
-            <input type="submit" value="Place Order">
-        </form>
-    </div>
+    <h2>Menu</h2>
+    <form method="POST">
+        <label for="food">Choose Food:</label>
+        <select name="food_id">
+            <?php
+            $menuQuery = "SELECT * FROM food_menu";
+            $result = $conn->query($menuQuery);
+            while ($row = $result->fetch_assoc()) {
+                echo "<option value='{$row['id']}'>{$row['name']} - \${$row['price']}</option>";
+            }
+            ?>
+        </select>
+        <label for="quantity">Quantity:</label>
+        <input type="number" name="quantity" required>
+        <button type="submit" name="order">Order Now</button>
+    </form>
 </body>
 
 </html>
